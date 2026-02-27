@@ -41,7 +41,7 @@ public class KnapTab {
         for (int i = 1; i < lines.size(); i++) { // Starting at the second line and looping through every line
             String[] parts = lines.get(i).split("\\s+"); // Splitting the raw data into sections where the spaces are
             if (parts.length != 3)
-                throw new IllegalArgumentException("Illegal format at line "+(i+1)+"\n"+"Expected: id weight value"); // skip malformed lines, if a line has 2 indexes instead of 3 we skip it
+                throw new IllegalArgumentException("Illegal format at line "+(i+1)+"\n"+"Expected: id weight value"); // Invalid line format throws exception
             idsList.add(Integer.parseInt(parts[0])); // Adding the item stored in part 0 of the sentence to IDS
             weightsList.add(Integer.parseInt(parts[1])); // Adding the item stored in part 1 of the sentence to weights
             valuesList.add(Integer.parseInt(parts[2])); // Adding the item stored in part 2 of the sentence to values
