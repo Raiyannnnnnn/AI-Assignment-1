@@ -1,6 +1,11 @@
 import java.util.*;
 import java.io.*;
 
+/*
+ * CPSC 371 Assignment 1, Part I: Simple 0-1 Knapsack Problem
+ * Solves the 0-1 knapsack problem using dynamic programming
+ */
+
 public class Part_1 {
 
     public static void main(String[] args) throws IOException {
@@ -70,7 +75,6 @@ public class Part_1 {
         Collections.reverse(chosen); // reversing the list so the items appear in order
 
         int totalValue = dp[n][capacity];
-        int totalWeight = capacity - w;
 
         String itemListStr = chosen.isEmpty() ? "(none)" : String.join(", ", chosen);
 
@@ -82,7 +86,6 @@ public class Part_1 {
         System.out.println("Result:");
         System.out.println(separator);
         System.out.println("Total Value: " + totalValue);
-        System.out.println("Total Weight: " + totalWeight);
         System.out.println("Item ID List: " + itemListStr);
         System.out.println(separator);
         System.out.println("Outputting dynamic_table.txt...");
@@ -100,21 +103,8 @@ public class Part_1 {
             tableBuilder.append("\n");
         }
 
-        // Write messages + DP table to dynamic_table.txt
+        // Write DP table to dynamic_table.txt
         PrintWriter writer = new PrintWriter(new FileWriter("dynamic_table.txt"));
-        writer.println(title);
-        writer.println("Please enter the data file name: " + filename);
-        writer.println("Processing...");
-        writer.println("Done!");
-        writer.println("Result:");
-        writer.println(separator);
-        writer.println("Total Value: " + totalValue);
-        writer.println("Total Weight: " + totalWeight);
-        writer.println("Item ID List: " + itemListStr);
-        writer.println(separator);
-        writer.println("Outputting dynamic_table.txt...");
-        writer.println("Done!");
-        writer.println("End of Processing.");
         writer.print(tableBuilder);
         writer.close();
 
