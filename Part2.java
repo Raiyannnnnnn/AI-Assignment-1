@@ -1,0 +1,166 @@
+import java.io.*;
+import java.util.*;
+
+/*
+ * CPSC 371 Assignment 1, Part II: General (Unbounded) Knapsack Problem
+ * Each item can be selected any number of times.
+ */
+public class Part2 {
+
+    // Simple struct to hold item data
+    static class Item {
+        String id;
+        int weight, price;
+
+        Item(String id, int weight, int price) {
+            this.id = id;
+            this.weight = weight;
+            this.price = price;
+        }
+    }
+
+    /**
+     * Read knapsack data from file.
+     * Line 1: capacity
+     * Lines 2+: itemID weight price (space or tab separated)
+     */
+    static int capacity;
+    static List<Item> items = new ArrayList<>();
+
+    static void readData(String filepath) throws IOException {
+        items.clear();
+        BufferedReader br = new BufferedReader(new FileReader(filepath));
+        String line;
+
+        // First non-empty line = capacity
+        while ((line = br.readLine()) != null) {
+            line = line.trim();
+            if (!line.isEmpty()) {
+                capacity = Integer.parseInt(line);
+                break;
+            }
+        }
+
+        // Remaining lines = items
+        while ((line = br.readLine()) != null) {
+            line = line.trim();
+            if (line.isEmpty())
+                continue;
+            String[] parts = line.split("\\s+");
+            if (parts.length != 3)
+                continue;
+            String id = parts[0];
+            int weight = Integer.parseInt(parts[1]);
+            int price = Integer.parseInt(parts[2]);
+            items.add(new Item(id, weight, price));
+        }
+        br.close();
+    }
+
+    /**
+     * Solve using 1D DP (unbounded knapsack).
+     * dp[w] = max value achievable with knapsack capacity w
+     * choice[w] = index of item last chosen to achieve dp[w] (-1 if none)
+     * Recurrence:
+     * for each w from 1..W:
+     * for each item i:
+     * if item.weight <= w and dp[w - item.weight] + item.price > dp[w]:
+     * dp[w] = dp[w - item.weight] + item.price
+     * choice[w] = i
+     */
+    static int[][] dp2;
+
+    // Build 2D unbounded DP table (uses same row for unbounded recurrence)
+    static void solve() {
+        int n = items.size();
+        int W = capacity;
+        dp2 = new int[n + 1][W + 1];
+        for (int i = 1; i <= n; i++) {
+            Item item = items.get(i - 1);
+            for (int w = 0; w <= W; w++) {
+                dp2[i][w] = dp2[i - 1][w];
+                if (item.weight <= w) {
+                    int take = dp2[i][w - item.weight] + item.price;
+                    if (take > dp2[i][w])
+                        dp2[i][w] = take;
+                }
+            }
+        }
+    }
+
+    // Backtrack from the same 2D table that gets written to file
+    // At each (i, w): if dp2[i][w] == dp2[i-1][w], item i was not taken (i--)
+    // Otherwise item i was taken: record it, subtract weight, stay at same i
+    // (unbounded)
+    static List<String> backtrack() {
+        List<String> selected = new ArrayList<>();
+        int i = items.size();
+        int w = capacity;
+        while (i > 0 && w > 0) {
+            if (dp2[i][w] == dp2[i - 1][w]) {
+                i--;
+            } else {
+                selected.add(items.get(i - 1).id);
+                w -= items.get(i - 1).weight;
+                // stay at same i — unbounded means we can take this item again
+            }
+        }
+        Collections.reverse(selected);
+        return selected;
+    }
+
+    // Write the shared 2D DP table to file
+    static void writeDynamicTable(String filename) throws IOException {
+        PrintWriter pw = new PrintWriter(new FileWriter(filename));
+        for (int[] row : dp2) {
+            for (int j = 0; j < row.length; j++) {
+                if (j > 0)
+                    pw.print(" ");
+                pw.print(row[j]);
+            }
+            pw.println();
+        }
+        pw.close();
+    }
+
+    public static void main(String[] args) throws IOException {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("General (Unbounded) Knapsack Problem");
+        System.out.print("Please enter the data file name: ");
+        String filepath = scanner.nextLine().trim();
+
+        File file = new File(filepath);
+        if (!file.exists()) {
+            System.out.println("Error: File '" + filepath + "' not found.");
+            return;
+        }
+
+        System.out.println("Processing...");
+        readData(filepath);
+        solve();
+        List<String> selectedIds = backtrack();
+        int totalValue = dp2[items.size()][capacity];
+
+        System.out.println("Done!");
+        System.out.println("Result:");
+        System.out.println("============================================");
+        System.out.println("Total Value: " + totalValue);
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < selectedIds.size(); i++) {
+            if (i > 0)
+                sb.append(", ");
+            sb.append(selectedIds.get(i));
+        }
+        System.out.println("Item ID List: " + sb);
+        System.out.println("============================================");
+
+        System.out.println("Outputting dynamic_table.txt...");
+        writeDynamicTable("dynamic_table.txt");
+        System.out.println("Done!");
+
+        System.out.println("End of Processing.");
+        scanner.close();
+    }
+}
